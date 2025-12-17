@@ -17,35 +17,35 @@ class OjisanController extends Controller
     // public function fetchOne() ...
 
     // ★追加: GIPHY用API
-    public function fetchMeme()
+public function fetchMeme()
     {
         $apiKey = env('GIPHY_API_KEY');
-        
-        // 検索ワード: ここを変えると出てくるミームが変わります
-        // "funny old man", "grandpa dancing", "senior citizen reaction" など
-        $query = 'funny old man'; 
+        $query = 'meme'; 
 
-        // ランダム性を出すために offset (取得開始位置) をランダムにする
-        // GIPHYの検索結果は膨大なので、0〜499くらいの間でランダム化
-        $offset = rand(0, 499);
+        // 修正点: 範囲を 0〜499 から 0〜50 に狭める
+        // これなら確実にヒットします
+        $offset = rand(0, 50);
 
         $response = Http::get('https://api.giphy.com/v1/gifs/search', [
             'api_key' => $apiKey,
             'q'       => $query,
             'limit'   => 1,
             'offset'  => $offset,
-            'rating'  => 'pg-13', // 過激すぎるものを除外 (g, pg, pg-13, r)
+            'rating'  => 'pg-13',
             'lang'    => 'en'
         ]);
 
         if ($response->successful()) {
             $data = $response->json();
             
+            // データが見つからなかった場合の保険
+            // 再検索するか、エラーではなく空の成功レスポンスを返すように変更しても良いですが、
+            // まずはオフセットを減らすだけで改善するはずです。
             if (empty($data['data'])) {
+                // ここで404が出ているのが原因
                 return response()->json(['error' => 'No meme found'], 404);
             }
 
-            // GIPHYは 'data' 配列の中に結果が入っています
             return response()->json($data['data'][0]);
         }
 

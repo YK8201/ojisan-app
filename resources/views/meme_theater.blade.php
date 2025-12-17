@@ -161,9 +161,9 @@
 
             try {
                 // 3. API取得 (MEME用エンドポイント) & 待機
-                // 待機時間を3秒確保
+                // URLの後ろに ?t=時刻 をつけて、毎回違うURLに見せかける（キャッシュ回避）
                 const [response, _] = await Promise.all([
-                    fetch('/meme/fetch'),
+                    fetch('/meme/fetch?t=' + new Date().getTime()), 
                     new Promise(r => setTimeout(r, 3000)) 
                 ]);
 
