@@ -1,220 +1,168 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEME THEATER</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap'); /* アメコミ風フォント */
-
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
         body {
-            background-color: #0d0d0d;
-            font-family: 'Bangers', cursive; /* フォント変更 */
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            color: #fff;
-        }
-
-        /* --- 劇場（ステージ） --- */
-        .stage-container {
-            position: relative;
-            width: 800px;
-            max-width: 90vw;
-            height: 500px;
-            max-height: 60vh;
-            border: 10px solid #ff0055; /* ポップなネオンピンク枠 */
-            box-shadow: 0 0 40px rgba(255, 0, 85, 0.4);
             background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
-            border-radius: 8px;
         }
 
-        /* --- 幕 --- */
-        .curtain {
+        /* --- ホームへ戻るボタン（サイバー風） --- */
+        .home-btn {
             position: absolute;
-            top: 0; width: 50%; height: 100%;
-            background: repeating-linear-gradient(90deg, #330000 0%, #cc0000 5%, #ff0000 10%); /* 明るい赤 */
-            z-index: 20;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* バウンドして開く */
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background: #000;
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            text-decoration: none;
+            text-transform: uppercase;
+            box-shadow: 3px 3px 0px #0f0;
+            transition: transform 0.1s, box-shadow 0.1s;
+            z-index: 50;
         }
-        .curtain-left { left: 0; transform-origin: left top; }
-        .curtain-right { right: 0; transform-origin: right top; }
-
-        .stage-container.open .curtain-left { transform: translateX(-100%); }
-        .stage-container.open .curtain-right { transform: translateX(100%); }
-
-        /* --- スポットライト --- */
-        .spotlight-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 30; pointer-events: none; opacity: 0;
-            transition: opacity 0.5s; mix-blend-mode: overlay;
-        }
-        .spotlight-beam {
-            position: absolute; width: 180px; height: 180px;
-            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
-            border-radius: 50%;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            filter: blur(15px);
-        }
-        .searching .spotlight-layer { opacity: 1; }
-        /* 動きを激しくする */
-        .searching .beam-1 { animation: searchMotion1 1.5s infinite ease-in-out alternate; }
-        .searching .beam-2 { animation: searchMotion2 1.8s infinite ease-in-out alternate-reverse; }
-
-        @keyframes searchMotion1 {
-            0%   { transform: translate(-200%, -100%) scale(1); }
-            100% { transform: translate(150%, 150%) scale(1.2); }
-        }
-        @keyframes searchMotion2 {
-            0%   { transform: translate(200%, -50%) scale(0.8); }
-            100% { transform: translate(-150%, 80%) scale(1.3); }
+        .home-btn:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #0f0;
+            background: #0f0;
+            color: #000;
         }
 
-        /* --- おじさんGIFエリア --- */
-        .actor-area {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10; opacity: 0; transition: opacity 0.5s;
-            background: radial-gradient(circle, #222 0%, #000 100%);
+        .curtain {
+            transition: transform 1s ease-in-out;
+            z-index: 10;
         }
-        .stage-container.open .actor-area { opacity: 1; }
+        .curtain-left { transform-origin: top left; }
+        .curtain-right { transform-origin: top right; }
+        
+        .spotlight {
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
 
-        /* --- ボタン --- */
-        .control-panel { margin-top: 40px; }
-        .btn-start {
-            background: #ff0055;
-            border: 4px solid #fff;
-            color: #fff;
-            padding: 15px 40px; font-size: 1.5rem; letter-spacing: 2px;
-            cursor: pointer; border-radius: 10px;
-            box-shadow: 5px 5px 0px #88002d;
-            transition: all 0.1s;
+        .glitch-text {
+            text-shadow: 2px 0 #f0f, -2px 0 #0ff;
+            animation: glitch 1s infinite alternate;
         }
-        .btn-start:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px; }
-        .btn-start:disabled { background: #555; border-color: #888; box-shadow: none; cursor: not-allowed; }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 #f0f, -2px 0 #0ff; }
+            25% { text-shadow: -2px 0 #ff0, 2px 0 #0f0; }
+            50% { text-shadow: 1px 0 #f0f, -1px 0 #0ff; }
+            100% { text-shadow: -1px 0 #ff0, 1px 0 #0f0; }
+        }
     </style>
 </head>
-<body>
-    <div class="text-center mb-6">
-        <h1 class="text-5xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 drop-shadow-md">
-            MEME THEATER
-        </h1>
-        <p class="text-gray-400 text-sm font-sans mt-2">Powered by GIPHY</p>
+<body class="h-screen w-screen flex flex-col items-center justify-center">
+
+    <a href="{{ url('/') }}" class="home-btn">
+        < HOME
+    </a>
+
+    <div class="relative w-[800px] h-[500px] border-4 border-green-500 bg-gray-900 shadow-[0_0_20px_rgba(0,255,0,0.5)] overflow-hidden" id="stage">
+        
+        <div class="curtain curtain-left absolute top-0 left-0 w-1/2 h-full bg-green-900 border-r-2 border-black" id="c-left"></div>
+        <div class="curtain curtain-right absolute top-0 right-0 w-1/2 h-full bg-green-900 border-l-2 border-black" id="c-right"></div>
+
+        <div class="spotlight absolute top-0 left-1/4 w-1/2 h-full transform -rotate-12" id="spot-1"></div>
+        <div class="spotlight absolute top-0 right-1/4 w-1/2 h-full transform rotate-12" id="spot-2"></div>
+
+        <div class="absolute inset-0 flex items-center justify-center p-10">
+            <img id="meme-img" class="max-w-full max-h-full object-contain opacity-0 transition-opacity duration-500" src="" alt="Meme">
+        </div>
+
+        <div id="loading-text" class="absolute inset-0 flex items-center justify-center text-green-400 font-bold text-2xl hidden">
+            <span class="glitch-text">ACCESSING MEME DATABASE...</span>
+        </div>
     </div>
 
-    <div id="stage" class="stage-container">
-        <div class="actor-area">
-            <img id="ojisan-img" src="" alt="Waiting..." class="max-w-full max-h-full object-contain">
-            
-            <div class="absolute bottom-2 right-2 text-white/70 text-sm font-sans bg-black/60 px-2 py-1 rounded">
-                <span id="meme-title"></span>
-            </div>
-        </div>
-        <div class="curtain curtain-left"></div>
-        <div class="curtain curtain-right"></div>
-        <div id="spotlight" class="spotlight-layer">
-            <div class="spotlight-beam beam-1"></div>
-            <div class="spotlight-beam beam-2"></div>
-        </div>
-    </div>
-
-    <div class="control-panel">
-        <button id="summon-btn" onclick="startShow()" class="btn-start">
-            SHOW ME MEME!
+    <div class="mt-8 text-center">
+        <button onclick="startShow()" class="px-8 py-4 bg-black border-2 border-green-500 text-green-500 font-bold text-xl hover:bg-green-500 hover:text-black transition-colors shadow-[4px_4px_0_#00ff00] active:shadow-[1px_1px_0_#00ff00] active:translate-x-[3px] active:translate-y-[3px]">
+            GENERATE MEME
         </button>
+        <p id="status" class="mt-4 text-sm text-gray-500">SYSTEM READY</p>
     </div>
 
     <script>
-        const stage = document.getElementById('stage');
-        const img = document.getElementById('ojisan-img');
-        const titleEl = document.getElementById('meme-title');
-        const btn = document.getElementById('summon-btn');
+        const leftCurtain = document.getElementById('c-left');
+        const rightCurtain = document.getElementById('c-right');
+        const memeImg = document.getElementById('meme-img');
+        const statusText = document.getElementById('status');
+        const loadingText = document.getElementById('loading-text');
+        const spot1 = document.getElementById('spot-1');
+        const spot2 = document.getElementById('spot-2');
 
-        // ★音声設定（ご自身のファイルパスに合わせてください）
-        const drumAudio = new Audio('https://actions.google.com/sounds/v1/foley/rhythmic_panting.ogg'); // 仮素材
-        const cymbalAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'); // 仮素材
-        drumAudio.loop = true;
+        let isRunning = false;
 
         async function startShow() {
-            // 1. リセット
-            if (stage.classList.contains('open')) {
-                stage.classList.remove('open');
-                btn.disabled = true;
-                await new Promise(r => setTimeout(r, 800)); // 幕が閉まるのを待つ
-            } else {
-                btn.disabled = true;
-            }
+            if (isRunning) return;
+            isRunning = true;
 
-            // 2. 演出開始
-            stage.classList.add('searching');
-            drumAudio.currentTime = 0;
-            drumAudio.play().catch(e => console.log('Audio error:', e));
+            // 1. Reset & Close Curtains
+            statusText.innerText = "INITIALIZING SEQUENCE...";
+            memeImg.style.opacity = '0';
+            leftCurtain.style.transform = 'translateX(0)';
+            rightCurtain.style.transform = 'translateX(0)';
+            spot1.style.opacity = '0';
+            spot2.style.opacity = '0';
+
+            await new Promise(r => setTimeout(r, 1200));
+
+            // 2. Fetch Data (with fake loading time)
+            loadingText.classList.remove('hidden');
+            statusText.innerText = "DOWNLOADING...";
 
             try {
-                // 3. API取得 (MEME用エンドポイント) & 待機
-                // URLの後ろに ?t=時刻 をつけて、毎回違うURLに見せかける（キャッシュ回避）
+                // キャッシュ回避のために現在時刻を付与
                 const [response, _] = await Promise.all([
                     fetch('/meme/fetch?t=' + new Date().getTime()), 
-                    new Promise(r => setTimeout(r, 3000)) 
+                    new Promise(r => setTimeout(r, 2000)) 
                 ]);
 
-                if (!response.ok) throw new Error('Network error');
+                if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
 
-                // 4. 画像プリロード (GIFの読み込み待ち)
+                // Preload Image
+                const imgUrl = data.images?.original?.url || data.images?.fixed_height?.url;
+                memeImg.src = imgUrl;
                 await new Promise((resolve, reject) => {
-                    img.onload = resolve;
-                    img.onerror = reject;
-                    // GIPHYのレスポンス構造に合わせてURLを取得
-                    // data.images.original.url がGIFの本体
-                    img.src = data.images.original.url;
+                    memeImg.onload = resolve;
+                    memeImg.onerror = reject;
                 });
 
-                // タイトル表示 (なければUsername)
-                titleEl.textContent = data.title || data.username || "Unknown Meme";
-
-                // 5. 準備完了
-                stage.classList.remove('searching');
-                drumAudio.pause();
-                cymbalAudio.currentTime = 0;
-                cymbalAudio.play().catch(e => console.log('Audio error:', e));
-
-                // 6. 幕オープン
-                stage.classList.add('open');
+                // 3. Open Curtains & Show
+                loadingText.classList.add('hidden');
+                statusText.innerText = "RENDER COMPLETE";
                 
-                // 7. 紙吹雪 (少しポップな色に変更)
-                fireConfetti();
+                leftCurtain.style.transform = 'translateX(-100%)';
+                rightCurtain.style.transform = 'translateX(100%)';
+                
+                await new Promise(r => setTimeout(r, 500));
+                
+                memeImg.style.opacity = '1';
+                spot1.style.opacity = '1';
+                spot2.style.opacity = '1';
 
-            } catch (error) {
-                console.error(error);
-                alert('ミーム取得失敗！');
-                stage.classList.remove('searching');
-                drumAudio.pause();
+            } catch (e) {
+                console.error(e);
+                statusText.innerText = "ERROR: CONNECTION LOST";
+                loadingText.classList.add('hidden');
             } finally {
-                btn.disabled = false;
-                btn.innerText = "NEXT MEME";
+                isRunning = false;
             }
-        }
-
-        function fireConfetti() {
-            setTimeout(() => {
-                confetti({
-                    particleCount: 200,
-                    spread: 120,
-                    origin: { y: 0.6 },
-                    // ポップな色合い
-                    colors: ['#ff0055', '#00ddff', '#ffff00', '#ffffff'] 
-                });
-            }, 100);
         }
     </script>
 </body>

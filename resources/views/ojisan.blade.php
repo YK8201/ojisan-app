@@ -3,223 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The OJISAN Stage</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+    <title>Ojisan Theater</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
-
         body {
-            background-color: #1a1a1a;
+            margin: 0;
+            padding: 0;
+            background-color: #1a0000;
+            color: #ffd700;
             font-family: 'Cinzel', serif;
+            height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
         }
 
-        /* --- 劇場（ステージ） --- */
-        .stage-container {
+        /* --- ホームへ戻るボタン --- */
+        .home-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            text-decoration: none;
+            color: #ffd700;
+            border: 2px solid #ffd700;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: rgba(50, 0, 0, 0.8);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            letter-spacing: 2px;
+        }
+
+        .home-btn:hover {
+            background-color: #ffd700;
+            color: #1a0000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        /* --- 劇場レイアウト --- */
+        .stage {
             position: relative;
             width: 800px;
-            max-width: 90vw;
-            height: 500px;
-            max-height: 60vh;
-            border: 8px solid #c5a059;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            background-color: #000;
+            height: 600px;
+            background: #000;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border: 10px solid #4a0000;
             overflow: hidden;
-            border-radius: 4px;
         }
 
-        /* --- 幕 --- */
+        /* カーテン */
         .curtain {
             position: absolute;
-            top: 0; width: 50%; height: 100%;
-            background: repeating-linear-gradient(90deg, #800000 0%, #600000 5%, #900000 10%);
-            z-index: 20;
-            transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1); /* 開く速度を少し調整 */
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, #800000 0%, #400000 50%, #800000 100%);
+            background-size: 40px 100%;
+            transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 10;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.5);
         }
-        .curtain-left { left: 0; transform-origin: left top; }
-        .curtain-right { right: 0; transform-origin: right top; }
+        .curtain.left { left: 0; transform-origin: top left; }
+        .curtain.right { right: 0; transform-origin: top right; }
 
-        .stage-container.open .curtain-left { transform: translateX(-100%); }
-        .stage-container.open .curtain-right { transform: translateX(100%); }
+        .stage.open .curtain.left { transform: translateX(-90%); }
+        .stage.open .curtain.right { transform: translateX(90%); }
 
         /* --- スポットライト --- */
-        .spotlight-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 30; pointer-events: none; opacity: 0;
-            transition: opacity 0.5s; mix-blend-mode: overlay;
-        }
-        .spotlight-beam {
-            position: absolute; width: 180px; height: 180px;
-            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+        .spotlight {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
             border-radius: 50%;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            filter: blur(15px);
-        }
-        .searching .spotlight-layer { opacity: 1; }
-        .searching .beam-1 { animation: searchMotion1 3s infinite ease-in-out alternate; }
-        .searching .beam-2 { animation: searchMotion2 3.5s infinite ease-in-out alternate-reverse; }
-
-        @keyframes searchMotion1 {
-            0%   { transform: translate(-200%, -100%) scale(1); }
-            30%  { transform: translate(50%, 50%) scale(1.2); }
-            60%  { transform: translate(-80%, 80%) scale(0.9); }
-            100% { transform: translate(150%, -50%) scale(1.1); }
-        }
-        @keyframes searchMotion2 {
-            0%   { transform: translate(150%, -100%) scale(1); }
-            40%  { transform: translate(-100%, 20%) scale(1.3); }
-            70%  { transform: translate(50%, -60%) scale(0.8); }
-            100% { transform: translate(-150%, 80%) scale(1.1); }
+            pointer-events: none;
+            opacity: 0;
+            /* フェードアウトを少しゆっくり(1s)にして余韻を残す */
+            transition: opacity 1s, transform 1s;
+            z-index: 20; 
+            mix-blend-mode: screen;
+            filter: blur(10px);
         }
 
-        /* --- おじさんエリア --- */
-        .actor-area {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10; opacity: 0; transition: opacity 0.5s;
-        }
-        .stage-container.open .actor-area { opacity: 1; }
+        /* 初期位置 */
+        .spotlight-1 { top: 20%; left: 30%; }
+        .spotlight-2 { top: 30%; right: 30%; }
+        
+        /* 探索中 */
+        .stage.searching .spotlight { opacity: 1; }
+        .stage.searching .spotlight-1 { animation: search1 3s infinite alternate ease-in-out; }
+        .stage.searching .spotlight-2 { animation: search2 4s infinite alternate ease-in-out; }
 
-        /* --- ボタン --- */
-        .control-panel { margin-top: 40px; }
-        .btn-start {
-            background: linear-gradient(to bottom, #d4af37, #aa8c2c);
-            border: 2px solid #fff; color: #3e2723;
-            padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
-            cursor: pointer; border-radius: 50px;
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
-            transition: all 0.2s;
+        /* ★変更点：おじさん登場時（フェードアウトして消える） */
+        .stage.revealed .spotlight {
+            opacity: 0; /* 完全に透明にする */
+            width: 500px;
+            height: 500px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) !important;
+            animation: none;
         }
-        .btn-start:active { transform: scale(0.95); }
-        .btn-start:disabled { background: #555; color: #999; cursor: not-allowed; border-color: #777; box-shadow: none; }
+
+        @keyframes search1 {
+            0%   { transform: translate(0, 0) scale(1); }
+            33%  { transform: translate(100px, 150px) scale(1.1); }
+            66%  { transform: translate(-50px, 200px) scale(0.9); }
+            100% { transform: translate(-100px, 0) scale(1.2); }
+        }
+
+        @keyframes search2 {
+            0%   { transform: translate(0, 0) scale(1.1); }
+            33%  { transform: translate(-120px, 100px) scale(0.9); }
+            66%  { transform: translate(80px, -50px) scale(1.2); }
+            100% { transform: translate(50px, 150px) scale(1); }
+        }
+
+        /* おじさん画像エリア */
+        #ojisan-img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 5;
+        }
+
+        /* 操作パネル */
+        .controls {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .summon-btn {
+            background: #800000;
+            color: #fff;
+            border: 2px solid #ffd700;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .summon-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .status {
+            margin-top: 10px;
+            height: 20px;
+            font-size: 14px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
-    <div class="text-center mb-6">
-        <h1 class="text-4xl text-yellow-500 tracking-widest drop-shadow-md">OJISAN THEATER</h1>
+
+    <a href="{{ url('/') }}" class="home-btn">
+        ← EXIT THEATER
+    </a>
+
+    <div class="stage" id="stage">
+        <div class="curtain left"></div>
+        <div class="curtain right"></div>
+        
+        <div class="spotlight spotlight-1"></div>
+        <div class="spotlight spotlight-2"></div>
+        
+        <img id="ojisan-img" src="" alt="Ojisan">
     </div>
 
-    <div id="stage" class="stage-container">
-        <div class="actor-area">
-            <img id="ojisan-img" src="" alt="Waiting..." class="max-w-full max-h-full object-contain shadow-2xl">
-            <div class="absolute bottom-2 right-2 text-white/50 text-xs bg-black/50 px-2 py-1 rounded">
-                Photo by <span id="credit-name"></span>
-            </div>
-        </div>
-        <div class="curtain curtain-left"></div>
-        <div class="curtain curtain-right"></div>
-        <div id="spotlight" class="spotlight-layer">
-            <div class="spotlight-beam beam-1"></div>
-            <div class="spotlight-beam beam-2"></div>
-        </div>
-    </div>
-
-    <div class="control-panel">
-        <button id="summon-btn" onclick="startShow()" class="btn-start">
-            OPEN THE CURTAIN
-        </button>
+    <div class="controls">
+        <button class="summon-btn" onclick="summonOjisan()">SUMMON OJISAN</button>
+        <div class="status" id="status-text">Click button to start show</div>
     </div>
 
     <script>
-        const stage = document.getElementById('stage');
-        const img = document.getElementById('ojisan-img');
-        const credit = document.getElementById('credit-name');
-        const btn = document.getElementById('summon-btn');
+        const drumRoll = new Audio('/sounds/drumroll.mp3');
+        const cymbal = new Audio('/sounds/cymbal.mp3');
+        
+        let isActivating = false;
 
-        // --- オーディオ設定 ---
-        // public/sounds/ にファイルを置いてください
-        // ファイルがない場合のテスト用URL（動作確認用）
-        // 本番では '/sounds/drumroll.mp3' などに書き換えてください
-        const drumAudio = new Audio('/sounds/drumroll.mp3');
-        const cymbalAudio = new Audio('/sounds/cymbal.mp3');
-        // ※↑同様に 'sounds/cymbal.mp3' に書き換えてください。
+        async function summonOjisan() {
+            if (isActivating) return;
+            isActivating = true;
 
-        // 設定：ループさせる
-        drumAudio.loop = true;
-        drumAudio.volume = 0.6;
-        cymbalAudio.volume = 0.8;
+            const stage = document.getElementById('stage');
+            const img = document.getElementById('ojisan-img');
+            const status = document.getElementById('status-text');
 
-
-        async function startShow() {
-            // 1. 状態リセット
-            if (stage.classList.contains('open')) {
-                stage.classList.remove('open');
-                btn.disabled = true;
-                await new Promise(r => setTimeout(r, 1000));
-            } else {
-                btn.disabled = true;
-            }
-
-            // 2. 演出開始
-            stage.classList.add('searching');
+            // 1. リセット
+            stage.classList.remove('open', 'revealed', 'searching');
+            img.style.opacity = 0;
+            status.innerText = "Closing curtains...";
             
-            // ★音：ドラムロール開始
-            // ユーザー操作(クリック)直後なので再生可能です
-            drumAudio.currentTime = 0;
-            drumAudio.play().catch(e => console.log('Audio play error:', e));
+            // 閉まる待機
+            await new Promise(r => setTimeout(r, 1000));
+
+            // 2. サーチ開始
+            status.innerText = "Searching for talent...";
+            drumRoll.currentTime = 0;
+            drumRoll.loop = true;
+            drumRoll.play().catch(e => {}); 
+            
+            stage.classList.add('searching');
 
             try {
-                // 3. API取得 & 待機 (3秒)
+                // 3. API取得
                 const [response, _] = await Promise.all([
-                    fetch('/ojisan/fetch'),
-                    new Promise(r => setTimeout(r, 3000)) 
+                    fetch('/ojisan/fetch'), 
+                    new Promise(r => setTimeout(r, 2500)) 
                 ]);
 
-                if (!response.ok) throw new Error('Network error');
+                if (!response.ok) throw new Error('Summon failed');
                 const data = await response.json();
-
-                // 4. 画像プリロード
+                
+                img.src = data.urls.regular;
+                
                 await new Promise((resolve, reject) => {
                     img.onload = resolve;
                     img.onerror = reject;
-                    img.src = data.urls.regular;
                 });
 
-                credit.textContent = data.user.name;
+                // 4. お披露目
+                drumRoll.pause();
+                cymbal.currentTime = 0;
+                cymbal.play().catch(e => {});
 
-                // 5. 準備完了
                 stage.classList.remove('searching');
-
-                // ★音：ドラムロール停止 & シンバル再生
-                drumAudio.pause();
-                drumAudio.currentTime = 0; // 頭出し
-                cymbalAudio.play().catch(e => console.log('Audio play error:', e));
-
-                // 6. 幕を開ける
-                stage.classList.add('open');
-                
-                // 7. 紙吹雪
-                fireConfetti();
+                stage.classList.add('open', 'revealed'); // ここでCSSによりスポットライトが消える
+                img.style.opacity = 1;
+                status.innerText = "The Ojisan has arrived!";
 
             } catch (error) {
                 console.error(error);
-                alert('エラーが発生しました。');
+                drumRoll.pause();
+                status.innerText = "Summoning failed... (Check API)";
                 stage.classList.remove('searching');
-                drumAudio.pause();
             } finally {
-                btn.disabled = false;
-                btn.innerText = "NEXT OJISAN";
+                isActivating = false;
             }
-        }
-
-        function fireConfetti() {
-            setTimeout(() => {
-                confetti({
-                    particleCount: 150,
-                    spread: 100,
-                    origin: { y: 0.6 },
-                    colors: ['#FFD700', '#FFFFFF', '#FFA500']
-                });
-            }, 100); // シンバルとほぼ同時に発射
         }
     </script>
 </body>

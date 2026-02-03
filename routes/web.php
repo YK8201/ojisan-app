@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OjisanController;
 use App\Http\Controllers\GameController;
 
+Route::get('/', function () {
+    return view('welcome');
+});
+
 // メイン画面（おじさんシアター）
 Route::get('/ojisan', [OjisanController::class, 'index']);
 
